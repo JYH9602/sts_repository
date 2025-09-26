@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>CEW 대시보드</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/gh/joungkyun/font-d2coding/d2coding.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { margin:0; font-family:'D2Coding', monospace; background:#000; color:#ddd; overflow-y:scroll; }
+
+    /* 🚀 빨간 레이저 느낌 스크롤바 */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #ff0000, #990000);
+      border-radius: 5px;
+      box-shadow: 0 0 10px #ff0000, 0 0 20px #ff3333;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #ff3333, #cc0000);
+      box-shadow: 0 0 15px #ff0000, 0 0 30px #ff3333;
+    }
+
+    .sidebar { position:fixed; top:0; left:0; width:240px; height:100%; background:#000; color:#fff;
+      padding:20px 10px; border-right:1px solid #333; overflow-y:auto; }
+    .logo-wrapper { text-align:center; margin-bottom:30px; cursor:pointer; }
+    .logo-wrapper img { width:140px; }
+    .menu { list-style:none; padding:0; margin:0; }
+    .menu > li { margin:8px 0; font-size:16px; color:#fff; cursor:pointer; transition:0.3s; }
+    .menu > li:hover { color:#ff0000; }
+    .toggle { float:right; display:inline-block; width:22px; height:22px; border-radius:50%;
+      background:#111; color:#ff0000; font-weight:bold; font-size:14px; text-align:center; line-height:22px;
+      margin-left:5px; box-shadow: 0 0 5px #ff0000, 0 0 10px #ff3333; }
+    .submenu { list-style:none; padding-left:20px; margin:5px 0; display:none; }
+    .submenu li { font-size:14px; margin:4px 0; cursor:pointer; color:#bbb; }
+    .submenu li:hover { color:#ff0000; }
+    .content { margin-left:260px; padding:80px 20px 20px 20px; }
+    .header { background:#000; color:#fff; padding:10px 20px; display:flex;
+      justify-content:flex-end; align-items:center; border-bottom:1px solid #333; gap:15px;
+      position:fixed; top:0; left:240px; right:0; z-index:1000; }
+    #timer, #loginUser { color:#ffff00; }
+    #userRole { color:#ffff00; text-shadow:0 0 5px #ffff00, 0 0 10px #ffea00; }
+    .btn-danger { background:#ff0000; border:none; }
+
+    /* 공통 박스 */
+    .box { border:1px solid #004080; background:#111; padding:10px; color:#ddd; }
+    table { width:100%; font-size:12px; border-collapse:collapse; color:#ddd; }
+    th,td { border-bottom:1px solid #444; padding:3px; text-align:center; }
+
+    /* 롤링 */
+    .rolling-box { border:1px solid #004080; height:30px; overflow:hidden;
+      margin:5px 0; font-size:13px; padding:2px 5px; background:#111; }
+    .rolling-text { display:flex; flex-direction:column; animation:rollUp 8s linear infinite; }
+    @keyframes rollUp { 0%{transform:translateY(0);} 100%{transform:translateY(-100%);} }
+
+    /* 분석 페이지 */
+    .dashboard { display:grid; grid-template-rows:60px auto 1fr; grid-gap:8px; min-height:800px; padding:8px; }
+    .top-filter { background:#111; border-radius:8px; padding:8px; }
+    .charts { display:grid; grid-template-columns:1fr 1fr; grid-gap:8px; align-items:stretch; }
+    .tables { display:grid; grid-template-columns:1fr 1fr; grid-gap:8px; }
+    .card { background:#111; border:none; border-radius:8px; padding:8px; color:#ddd; }
+    .card canvas { width:100% !important; height:auto !important; max-height:none !important; }
+    .btn-dark-custom { background:#222; border:none; color:#fff; padding:4px 10px; border-radius:5px; font-size:13px; }
+    .btn-dark-custom:hover { background:#444; }
+    .table-dark { --bs-table-bg:#161b22; --bs-table-striped-bg:#1c2128; --bs-table-hover-bg:#21262d;
+      color:#ddd; font-size:12px; }
+    .table-wrapper { max-height:200px; overflow-y:auto; }
+    h5 { font-size:14px; margin-bottom:6px; }
+    .circle { width:15px; height:15px; border-radius:50%; display:inline-block; margin:0 3px; }
+    .green { background:green; } .yellow{background:yellow;} .red{background:red;} .gray{background:gray;}
+    .battery { width:100px; height:25px; border:2px solid #fff; position:relative; margin:auto; }
+    .battery::after { content:""; position:absolute; right:-6px; top:5px; width:4px; height:15px; background:#fff; }
+    .battery-level { height:100%; width:70%; background:limegreen; }
+  </style>
+</head>
+<body>
+  <!-- 사이드바 -->
+  <div class="sidebar">
+    <div class="logo-wrapper" onclick="loadContent('보안 이벤트 요약')">
+      <img src="/images/logo.png" alt="보안 로고" class="logo" id="eagleLogo">
+    </div>
+    <ul class="menu">
+      <li class="has-sub">
+        <span class="menu-title">대시보드</span><span class="toggle">+</span>
+        <ul class="submenu">
+          <li onclick="loadContent('보안 이벤트 요약')">보안 이벤트 요약</li>
+          <li onclick="loadContent('보안 이벤트 분석')">보안 이벤트 분석</li>
+          <li onclick="loadContent('리소스 사용현황')">리소스 사용현황</li>
+        </ul>
+      </li>
+      <li class="has-sub"><span class="menu-title">정책관리</span><span class="toggle">+</span>
+        <ul class="submenu"><li onclick="loadContent('정책 관리 페이지')">정책 관리 페이지</li></ul>
+      </li>
+      <li class="has-sub"><span class="menu-title">로그센터</span><span class="toggle">+</span>
+        <ul class="submenu">
+          <li onclick="loadContent('탐지 로그')">탐지 로그</li>
+          <li onclick="loadContent('알림 로그')">알림 로그</li>
+          <li onclick="loadContent('차단 이력 로그')">차단 이력 로그</li>
+          <li onclick="loadContent('관리자 활동 로그')">관리자 활동 로그</li>
+        </ul>
+      </li>
+      <li class="has-sub"><span class="menu-title">DB 관리서버</span><span class="toggle">+</span>
+        <ul class="submenu">
+          <li onclick="loadContent('백업 & 복구')">백업 & 복구</li>
+          <li onclick="loadContent('보호대상 DB 관리')">보호대상 DB 관리</li>
+        </ul>
+      </li>
+      <li class="has-sub"><span class="menu-title">관리자 페이지</span><span class="toggle">+</span>
+        <ul class="submenu">
+          <li onclick="loadContent('관리자 계정 관리')">관리자 계정 관리</li>
+          <li onclick="loadContent('사용자 권한 관리')">사용자 권한 관리</li>
+          <li onclick="loadContent('시스템 정책 설정')">시스템 정책 설정</li>
+        </ul>
+      </li>
+      <li onclick="loadContent('시스템 환경 설정')">시스템 환경 설정</li>
+    </ul>
+  </div>
+
+<!-- 헤더 -->
+<div class="header">
+  <span>로그인 경과시간: <strong id="timer">00:00</strong></span>
+  <span>로그인 아이디: <strong id="loginUser" th:text="${user.login_id}"></strong></span>
+  <span>권한: <strong id="userRole" th:text="${user.position}"></strong></span>
+  <button class="btn btn-danger btn-sm" onclick="location.href='/logout'">로그아웃</button>
+</div>
+
+  <!-- 메인 -->
+  <div class="content" id="mainContent">
+    <h2>보안 이벤트 요약</h2>
+    <p>최근 보안 이벤트 현황을 요약해서 보여줍니다.</p>
+  </div>
+
+<script>
+  // 메뉴 토글
+  document.querySelectorAll(".has-sub").forEach(menu=>{
+    const toggle=menu.querySelector(".toggle");
+    const title=menu.querySelector(".menu-title");
+    const submenu=menu.querySelector(".submenu");
+    function toggleMenu(e){ e.stopPropagation();
+      submenu.style.display=(submenu.style.display==="block")?"none":"block";
+      toggle.textContent=(submenu.style.display==="block")?"-":"+"; }
+    toggle.addEventListener("click",toggleMenu);
+    title.addEventListener("click",toggleMenu);
+  });
+
+  function loadContent(title){
+    const content=document.getElementById("mainContent");
+
+    // --- 보안 이벤트 요약 ---
+    if(title==="보안 이벤트 요약"){
+      content.innerHTML=`
+        <h2>보안 이벤트 요약</h2>
+        <div>실시간 탐지 내용:</div>
+        <div class="rolling-box"><div class="rolling-text">
+          <span>[탐지] SQL Injection 차단됨</span>
+          <span>[탐지] XSS 공격 탐지됨</span>
+          <span>[탐지] Port Scan 발생</span>
+          <span>[탐지] RDP Brute Force 차단</span>
+        </div></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+          <div class="box"><canvas id="chart1"></canvas></div>
+          <div class="box"><canvas id="chart2"></canvas></div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:15px;">
+          <div class="box">일일 탐지 순위 (정책기반)</div>
+          <div class="box"><canvas id="chart3"></canvas></div>
+          <div class="box">일일 누적 탐지 패킷수</div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:15px;">
+          <div class="box">서버상태<br>
+            <span class="circle green"></span>
+            <span class="circle yellow"></span>
+            <span class="circle red"></span>
+            <span class="circle gray"></span>
+          </div>
+          <div class="box">리소스 사용량<br>
+            <div class="battery"><div class="battery-level"></div></div>
+          </div>
+          <div class="box">방화벽 상태<br><strong style="color:lime;">ON</strong></div>
+          <div class="box">열려 있는 포트
+            <table><tr><th>포트</th><th>상태</th></tr>
+              <tr><td>22</td><td>Open</td></tr>
+              <tr><td>80</td><td>Open</td></tr>
+              <tr><td>443</td><td>Open</td></tr>
+            </table>
+          </div>
+          <div class="box">최근접속로그
+            <table><tr><th>시간</th><th>IP</th></tr>
+              <tr><td>12:00</td><td>192.168.0.10</td></tr>
+              <tr><td>12:05</td><td>192.168.0.11</td></tr>
+            </table>
+          </div>
+          <div class="box">일일 이메일 알림현황
+            <ul>
+              <li>관리자 알림 전송 완료</li>
+              <li>정책 알림 대기</li>
+              <li>서버상태 알림 완료</li>
+            </ul>
+          </div>
+        </div>`;
+      new Chart(document.getElementById('chart1'),{type:'line',
+        data:{labels:["0시","4시","8시","12시","16시","20시"],
+          datasets:[{label:"행동기반",data:[5,7,3,8,6,9],borderColor:"red",fill:false},
+                    {label:"패턴기반",data:[3,4,6,2,7,5],borderColor:"blue",fill:false}]}}); 
+      new Chart(document.getElementById('chart2'),{type:'bar',
+        data:{labels:["정책A","정책B","정책C"],
+          datasets:[{label:"탐지 건수",data:[12,19,7],backgroundColor:["red","orange","green"]}]}}); 
+      new Chart(document.getElementById('chart3'),{type:'pie',
+        data:{labels:["Critical","High","Medium","Low"],
+          datasets:[{data:[5,10,15,20],backgroundColor:["red","orange","yellow","green"]}]}}); 
+    }
+
+    // --- 보안 이벤트 분석 ---
+    else if(title==="보안 이벤트 분석"){
+      content.innerHTML=`
+        <div class="dashboard">
+          <div class="top-filter">
+            <div class="row g-2">
+              <div class="col-md-2"><select class="form-select bg-dark text-white form-select-sm">
+                <option>행동기반</option><option>패턴기반</option><option>정책기반</option></select></div>
+              <div class="col-md-3"><input type="date" class="form-control bg-dark text-white form-control-sm"></div>
+              <div class="col-md-3"><input type="time" class="form-control bg-dark text-white form-control-sm"></div>
+              <div class="col-md-2 ms-auto text-end">
+                <button class="btn-dark-custom btn-sm me-2">적용</button>
+                <button class="btn-dark-custom btn-sm">초기화</button>
+              </div>
+            </div>
+          </div>
+          <div class="charts">
+            <div class="card"><h5>시간대별 탐지</h5><canvas id="timeChart"></canvas></div>
+            <div class="d-flex flex-column gap-2">
+              <div class="card flex-fill"><h5>탐지 TOP 10</h5><canvas id="top10Chart"></canvas></div>
+              <div class="card flex-fill"><h5>위험도 분포</h5><canvas id="riskChart"></canvas></div>
+              <div class="card flex-fill"><h5>탐지유형 비율</h5><canvas id="typeChart"></canvas></div>
+            </div>
+          </div>
+          <div class="tables">
+            <div class="card"><h5>시간대별 탐지 로그</h5>
+              <div class="table-wrapper">
+                <table class="table table-dark table-striped">
+                  <thead><tr><th>시간</th><th>정책</th><th>위험도</th><th>출발지</th><th>조치</th></tr></thead>
+                  <tbody>
+                    <tr><td>2025-09-13 11:50</td><td>SQL Injection</td><td>Critical</td><td>203.0.113.10</td><td>차단</td></tr>
+                    <tr><td>2025-09-13 11:45</td><td>Brute Force</td><td>High</td><td>198.51.100.5</td><td>차단</td></tr>
+                    <tr><td>2025-09-13 11:40</td><td>Port Scan</td><td>Medium</td><td>192.168.1.100</td><td>탐지만</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card"><h5>위험도 분포 (목록)</h5>
+              <div class="table-wrapper">
+                <table class="table table-dark">
+                  <thead><tr><th>위험도</th><th>건수</th></tr></thead>
+                  <tbody>
+                    <tr><td>Critical</td><td>11</td></tr>
+                    <tr><td>High</td><td>71</td></tr>
+                    <tr><td>Medium</td><td>87</td></tr>
+                    <tr><td>Low</td><td>101</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      new Chart(document.getElementById('timeChart'),{type:'line',
+        data:{labels:['00시','03시','06시','09시','12시'],
+          datasets:[{label:'탐지 건수',data:[3,7,5,12,9],borderColor:'red',fill:false}]}}); 
+      new Chart(document.getElementById('top10Chart'),{type:'bar',
+        data:{labels:['SQL Injection','Brute Force','Port Scan','XSS'],
+          datasets:[{label:'탐지 건수',data:[20,15,8,5],backgroundColor:['#ff4d4d','#ff9933','#3399ff','#ffcc00']}]}}); 
+      new Chart(document.getElementById('riskChart'),{type:'doughnut',
+        data:{labels:['Critical','High','Medium','Low'],
+          datasets:[{data:[11,71,87,101],backgroundColor:['#ff4d4d','#ff9933','#ffcc00','#3399ff']}]}}); 
+      new Chart(document.getElementById('typeChart'),{type:'pie',
+        data:{labels:['SQL Injection','XSS','Brute Force','Port Scan'],
+          datasets:[{data:[25,15,20,10],backgroundColor:['#e74c3c','#9b59b6','#2980b9','#27ae60']}]}}); 
+    }
+
+    // --- 리소스 사용현황 ---
+    else if(title==="리소스 사용현황"){
+      content.innerHTML=`
+        <h2>리소스 사용현황</h2>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:15px;">
+          <div class="box text-center"><h5>CPU</h5><div id="cpuUsage" style="font-size:20px;">0%</div></div>
+          <div class="box text-center"><h5>메모리</h5><div id="memoryUsage" style="font-size:20px;">0%</div></div>
+          <div class="box text-center"><h5>스토리지</h5><div id="storageUsage" style="font-size:20px;">0%</div></div>
+          <div class="box text-center"><h5>네트워크</h5><div id="networkUsage" style="font-size:20px;">0 Mbps</div></div>
+        </div>
+        <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:15px;">
+          <div class="box"><h5>리소스 트렌드</h5><canvas id="resourceTrend"></canvas></div>
+          <div class="box"><h5>알림 & 상태</h5>
+            <ul style="font-size:13px; list-style:none; padding-left:0;">
+              <li>09:10 - 스토리지 사용률 80% 근접 (경고)</li>
+              <li>04:25 - CPU 스파이크 감지</li>
+              <li>어제 22:11 - 네트워크 RX 비정상</li>
+            </ul>
+            <button class="btn-dark-custom btn-sm mt-2">임계치 초과시 이메일 알림</button>
+            <button class="btn-dark-custom btn-sm mt-2">자동 정책 · 스로틀링</button>
+          </div>
+        </div>
+        <div class="box"><h5>상세정보</h5><p>메모리, 스토리지, 네트워크 (향후 개발 예정)</p></div>`;
+      new Chart(document.getElementById('resourceTrend'),{type:'line',
+        data:{labels:Array.from({length:12},(_,i)=>(i*5)+":00"),
+          datasets:[
+            {label:"CPU(%)",data:[20,40,35,60,45,70,55,65,40,50,45,60],borderColor:"red",fill:false},
+            {label:"메모리(%)",data:[30,35,40,45,50,55,60,62,58,57,59,60],borderColor:"orange",fill:false},
+            {label:"네트워크(Mbps)",data:[100,150,120,200,180,220,210,190,170,160,180,200],borderColor:"blue",fill:false},
+            {label:"스토리지(%)",data:[50,52,53,54,55,56,57,58,59,60,61,62],borderColor:"green",fill:false}
+          ]}}); 
+      setInterval(()=>{document.getElementById("cpuUsage").innerText=Math.floor(Math.random()*100)+"%";
+        document.getElementById("memoryUsage").innerText=Math.floor(Math.random()*100)+"%";
+        document.getElementById("storageUsage").innerText=(40+Math.floor(Math.random()*60))+"%";
+        document.getElementById("networkUsage").innerText=(100+Math.floor(Math.random()*900))+" Mbps";},3000);
+    }
+
+    else{
+      content.innerHTML=`<h2>${title}</h2><p>준비중인 페이지입니다.</p>`;
+    }
+  }
+
+  function logout(){window.location.href="index.html";}
+  let seconds=0;
+  setInterval(()=>{seconds++;let m=String(Math.floor(seconds/60)).padStart(2,'0');
+    let s=String(seconds%60).padStart(2,'0');document.getElementById("timer").textContent=`${m}:${s}`;},1000);
+</script>
+</body>
+</html>

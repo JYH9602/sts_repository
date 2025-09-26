@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.mapper.CewMapper">
+
+    <!-- 전체 조회 -->
+    <select id="findAll" resultType="com.example.demo.dto.CewDto">
+        SELECT * FROM cew_user
+    </select>
+
+    <!-- 로그인 아이디로 조회 -->
+    <select id="findByLoginId" parameterType="string" resultType="com.example.demo.dto.CewDto">
+        SELECT * FROM cew_user WHERE login_id = #{loginId}
+    </select>
+
+    <!-- 사용자 등록 -->
+    <insert id="insert" parameterType="com.example.demo.dto.CewDto">
+        INSERT INTO cew_user 
+        (user_id, login_id, password, user_name, email, phone_number, position, status, created_at, updated_at, expired_at)
+        VALUES 
+        (#{userId}, #{login_id}, #{password}, #{user_name}, #{email}, #{phone_number}, #{position}, #{status}, NOW(), NOW(), #{expired_at})
+    </insert>
+
+    <!-- 사용자 수정 -->
+    <update id="update" parameterType="com.example.demo.dto.CewDto">
+        UPDATE cew_user
+        SET login_id = #{login_id},
+            password = #{password},
+            user_name = #{user_name},
+            email = #{email},
+            phone_number = #{phone_number},
+            position = #{position},
+            status = #{status},
+            updated_at = NOW(),
+            expired_at = #{expired_at}
+        WHERE user_id = #{user_id}
+    </update>
+
+    <!-- 사용자 삭제 -->
+    <delete id="delete" parameterType="string">
+        DELETE FROM cew_user WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

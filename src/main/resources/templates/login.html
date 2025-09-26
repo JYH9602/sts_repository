@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>보안 로그인</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: '맑은 고딕', sans-serif;
+      background: #000;
+    }
+
+    /* 매트릭스 배경 */
+    canvas {
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 0;
+    }
+
+    /* 로그인 박스 */
+    .login-container {
+      position: relative;
+      z-index: 2;
+      background-color: #000000;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      width: 400px;
+      margin: auto;
+      margin-top: 8%;
+      box-shadow: 0 0 15px rgba(0,255,0,0.3);
+      color: #fff;
+    }
+
+    /* 로고 */
+    .logo {
+      width: 220px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 3;
+    }
+
+    /* 🚀 독수리 레이저 효과 */
+    @keyframes eagleLaser {
+      0%   { opacity: 0; filter: drop-shadow(0 0 0 red); transform: scale(1); }
+      20%  { opacity: 1; filter: drop-shadow(0 0 20px red) drop-shadow(0 0 40px orange); transform: scale(1.1); }
+      50%  { opacity: 1; filter: drop-shadow(0 0 60px red) drop-shadow(0 0 120px orange); transform: scale(1.3); }
+      80%  { opacity: 0.8; filter: drop-shadow(0 0 40px red) drop-shadow(0 0 80px orange); transform: scale(1.6); }
+      100% { opacity: 0; filter: drop-shadow(0 0 0 red); transform: scale(2); }
+    }
+    .eagle-laser {
+      animation: eagleLaser 2s ease-out;
+    }
+
+    /* 입력창 */
+    .form-control {
+      background-color: #0d1117;
+      border: 1px solid #30363d;
+      color: #fff;
+    }
+    .form-control:focus {
+      border-color: #00ff00;
+      box-shadow: 0 0 8px #00ff00;
+      background-color: #161b22;
+      color: #fff;
+    }
+
+    /* 로그인 버튼 */
+    .btn-login {
+      background-color: #b22222;
+      border: none;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+    .btn-login:hover {
+      background-color: #ff4040;
+      box-shadow: 0 0 8px #ff4040;
+    }
+  </style>
+</head>
+<body>
+  <!-- 매트릭스 배경 -->
+  <canvas id="matrix"></canvas>
+
+  <!-- 로그인 박스 -->
+  <div class="login-container">
+    <img src="/images/logo.png" alt="보안 로고" class="logo" id="eagleLogo">
+
+    <form id="loginForm" method="post" action="/login">
+      <div class="mb-3 text-start">
+        <label class="form-label">로그인 아이디</label>
+        <input type="text" name="login_id" id="loginId" class="form-control" required>
+      </div>
+      <div class="mb-3 text-start">
+        <label class="form-label">비밀번호</label>
+        <input type="password" name="password" id="loginPw" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-login text-white">로그인</button>
+    </form>
+  </div>
+
+<script>
+  // === 매트릭스 배경 ===
+  const canvas = document.getElementById("matrix");
+  const ctx = canvas.getContext("2d");
+  canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth;
+
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+  const fontSize = 14;
+  const columns = canvas.width / fontSize;
+  let drops = [];
+  for (let x = 0; x < columns; x++) drops[x] = 1;
+
+  function draw() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#00ff00";
+    ctx.font = fontSize + "px monospace";
+    for (let i = 0; i < drops.length; i++) {
+      let text = letters.charAt(Math.floor(Math.random() * letters.length));
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  // 🚀 독수리 레이저 + 매트릭스 효과 시작
+  window.addEventListener("load", () => {
+    const logo = document.getElementById('eagleLogo');
+    logo.classList.add('eagle-laser'); // 레이저 효과
+
+    // 2초 후 레이저 애니메이션 끝나면 매트릭스 실행
+    setTimeout(() => {
+      logo.classList.remove('eagle-laser');
+      setInterval(draw, 33);
+    }, 2000);
+  });
+
+  window.addEventListener("resize", () => {
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+  });
+</script>
+</body>
+</html>

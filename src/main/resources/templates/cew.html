@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>CEW 사용자 목록</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #ddd;
+            font-family: Arial, sans-serif;
+        }
+        h2 { color: #ff0000; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #111;
+            color: #ff0000;
+        }
+        tr:nth-child(even) {
+            background-color: #161b22;
+        }
+    </style>
+</head>
+<body>
+    <h2>CEW 사용자 목록</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>userId</th>
+                <th>loginId</th>
+                <th>userName</th>
+                <th>email</th>
+                <th>phoneNumber</th>
+                <th>status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- service.getAll() 결과를 반복 -->
+            <tr th:each="user : ${cews}">
+                <td th:text="${user.user_id}"></td>
+                <td th:text="${user.login_id}"></td>
+                <td th:text="${user.user_name}"></td>
+                <td th:text="${user.email}"></td>
+                <td th:text="${user.phone_number}"></td>
+                <td th:text="${user.status}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
