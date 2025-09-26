@@ -17,7 +17,7 @@ public class LoginController {
     }
 
     // 로그인 페이지 GET
-    @GetMapping("/login")
+    @GetMapping("/")
     public String loginPage() {
         return "login"; // templates/login.html
     }
