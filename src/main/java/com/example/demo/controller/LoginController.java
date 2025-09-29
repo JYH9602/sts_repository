@@ -17,7 +17,7 @@ public class LoginController {
     }
 
     // 로그인 페이지 GET
-    @GetMapping("/")
+    @GetMapping("/login")
     public String loginPage() {
         return "login"; // templates/login.html
     }
@@ -57,10 +57,9 @@ public class LoginController {
         return "dashboard"; // templates/dashboard.html
     }
 
-    // 로그아웃
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public String logout(HttpSession session) {
-        session.invalidate(); // 세션 비우기
+        session.invalidate();
         return "redirect:/login";
     }
 }

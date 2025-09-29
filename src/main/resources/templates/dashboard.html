@@ -44,12 +44,12 @@
     .btn-danger { background:#ff0000; border:none; }
 
     /* 공통 박스 */
-    .box { border:1px solid #004080; background:#111; padding:10px; color:#ddd; }
+    .box { border:none; background:#111; padding:10px; color:#ddd; }
     table { width:100%; font-size:12px; border-collapse:collapse; color:#ddd; }
     th,td { border-bottom:1px solid #444; padding:3px; text-align:center; }
 
     /* 롤링 */
-    .rolling-box { border:1px solid #004080; height:30px; overflow:hidden;
+    .rolling-box { border:1px solid #fff; height:30px; overflow:hidden;
       margin:5px 0; font-size:13px; padding:2px 5px; background:#111; }
     .rolling-text { display:flex; flex-direction:column; animation:rollUp 8s linear infinite; }
     @keyframes rollUp { 0%{transform:translateY(0);} 100%{transform:translateY(-100%);} }
@@ -97,7 +97,14 @@
 	.logged-out th {
   		color: #aaa !important;
 }
+.card h5 {
+  font-size:14px;
+  margin-bottom:6px;
+}
 
+#riskChart {
+  max-height:300px;   /* 원형 차트 너무 크지 않게 */
+}
 
   </style>
 </head>
@@ -149,7 +156,7 @@
   <span>로그인 경과시간: <strong id="timer">00:00</strong></span>
   <span>로그인 아이디: <strong id="loginUser" th:text="${user.login_id}"></strong></span>
   <span>권한: <strong id="userRole" th:text="${user.position}"></strong></span>
-  <button class="btn btn-danger btn-sm" onclick="location.href='/logout'">로그아웃</button>
+  <button class="btn btn-danger btn-sm" onclick="logout()">로그아웃</button>
 </div>
 
   <!-- 메인 -->
@@ -355,6 +362,37 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
     </div>
   </div>
 </div>
+<!-- 공통 알림 모달 -->
+<div class="modal fade" id="alertModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">알림</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="alertMessage">메시지 내용</div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" data-bs-dismiss="modal">확인</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 공통 확인 모달 -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">확인</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="confirmMessage">메시지 내용</div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
+        <button id="confirmOkBtn" class="btn btn-primary btn-sm">확인</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
   // 메뉴 토글
   document.querySelectorAll(".has-sub").forEach(menu=>{
@@ -443,29 +481,53 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
     }
 
     // --- 보안 이벤트 분석 ---
-    else if(title==="보안 이벤트 분석"){
-      content.innerHTML=`
-        <div class="dashboard">
-          <div class="top-filter">
-            <div class="row g-2">
-              <div class="col-md-2"><select class="form-select bg-dark text-white form-select-sm">
-                <option>행동기반</option><option>패턴기반</option><option>정책기반</option></select></div>
-              <div class="col-md-3"><input type="date" class="form-control bg-dark text-white form-control-sm"></div>
-              <div class="col-md-3"><input type="time" class="form-control bg-dark text-white form-control-sm"></div>
-              <div class="col-md-2 ms-auto text-end">
-                <button class="btn-dark-custom btn-sm me-2">적용</button>
-                <button class="btn-dark-custom btn-sm">초기화</button>
-              </div>
-            </div>
+else if(title==="보안 이벤트 분석"){
+  content.innerHTML=`
+    <div class="dashboard">
+      
+      <!-- 상단 필터 -->
+      <div class="top-filter mb-2">
+        <div class="row g-2">
+          <div class="col-md-2">
+            <select class="form-select bg-dark text-white form-select-sm">
+              <option>행동기반</option><option>패턴기반</option><option>정책기반</option>
+            </select>
           </div>
-          <div class="charts">
-            <div class="card"><h5>시간대별 탐지</h5><canvas id="timeChart"></canvas></div>
-            <div class="d-flex flex-column gap-2">
-              <div class="card flex-fill"><h5>탐지 TOP 10</h5><canvas id="top10Chart"></canvas></div>
-              <div class="card flex-fill"><h5>위험도 분포</h5><canvas id="riskChart"></canvas></div>
-              <div class="card flex-fill"><h5>탐지유형 비율</h5><canvas id="typeChart"></canvas></div>
-            </div>
+          <div class="col-md-3"><input type="date" class="form-control bg-dark text-white form-control-sm"></div>
+          <div class="col-md-3"><input type="time" class="form-control bg-dark text-white form-control-sm"></div>
+          <div class="col-md-2 ms-auto text-end">
+            <button class="btn-dark-custom btn-sm me-2">적용</button>
+            <button class="btn-dark-custom btn-sm">초기화</button>
           </div>
+        </div>
+      </div>
+
+      <!-- 메인 레이아웃 -->
+      <div class="row">
+        <!-- 왼쪽 영역 (시간대별 탐지 + TOP10 세로배치) -->
+        <div class="col-md-8 d-flex flex-column gap-2">
+          <div class="card flex-fill"><h5>시간대별 탐지</h5><canvas id="timeChart"></canvas></div>
+          <div class="card flex-fill"><h5>탐지 TOP 10</h5><canvas id="top10Chart"></canvas></div>
+        </div>
+
+        <!-- 오른쪽 영역 (위험도 분포) -->
+        <div class="col-md-4">
+          <div class="card h-100"><h5>위험도 분포</h5><canvas id="riskChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- 하단 날짜/시간 설정 -->
+      <div class="row mt-3">
+      <div class="col-md-12 box text-center">
+        날짜 설정 : 
+        <input type="date" id="customDate" class="form-control d-inline-block bg-dark text-white form-control-sm" style="width:auto;">
+        　
+        시간 설정 : 
+        <input type="time" id="customTime" class="form-control d-inline-block bg-dark text-white form-control-sm" style="width:auto;">
+        
+        <button class="btn-dark-custom btn-sm ms-2" onclick="applyDateTime()">적용</button>
+      </div>
+    </div>
           <div class="tables">
             <div class="card"><h5>시간대별 탐지 로그</h5>
               <div class="table-wrapper">
@@ -494,19 +556,31 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
             </div>
           </div>
         </div>`;
-      new Chart(document.getElementById('timeChart'),{type:'line',
-        data:{labels:['00시','03시','06시','09시','12시'],
-          datasets:[{label:'탐지 건수',data:[3,7,5,12,9],borderColor:'red',fill:false}]}}); 
-      new Chart(document.getElementById('top10Chart'),{type:'bar',
-        data:{labels:['SQL Injection','Brute Force','Port Scan','XSS'],
-          datasets:[{label:'탐지 건수',data:[20,15,8,5],backgroundColor:['#ff4d4d','#ff9933','#3399ff','#ffcc00']}]}}); 
-      new Chart(document.getElementById('riskChart'),{type:'doughnut',
-        data:{labels:['Critical','High','Medium','Low'],
-          datasets:[{data:[11,71,87,101],backgroundColor:['#ff4d4d','#ff9933','#ffcc00','#3399ff']}]}}); 
-      new Chart(document.getElementById('typeChart'),{type:'pie',
-        data:{labels:['SQL Injection','XSS','Brute Force','Port Scan'],
-          datasets:[{data:[25,15,20,10],backgroundColor:['#e74c3c','#9b59b6','#2980b9','#27ae60']}]}}); 
+  // ===== 차트들 =====
+  new Chart(document.getElementById('timeChart'), {
+    type:'line',
+    data:{
+      labels:['00시','03시','06시','09시','12시'],
+      datasets:[{label:'탐지 건수',data:[3,7,5,12,9],borderColor:'red',fill:false}]
     }
+  });
+  
+  new Chart(document.getElementById('top10Chart'), {
+    type:'bar',
+    data:{
+      labels:['SQL Injection','Brute Force','Critical','Port Scan'],
+      datasets:[{label:'탐지 건수',data:[20,15,8,5],backgroundColor:['#ff4d4d','#ff9933','#3399ff','#ffcc00']}]
+    }
+  });
+
+  new Chart(document.getElementById('riskChart'), {
+    type:'doughnut',
+    data:{
+      labels:['Critical','High','Medium','Low'],
+      datasets:[{data:[11,71,87,101],backgroundColor:['#ff4d4d','#ff9933','#ffcc00','#27ae60']}]
+    }
+  });
+}
 
     // --- 리소스 사용현황 ---
     else if(title==="리소스 사용현황"){
@@ -606,7 +680,6 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
                 <td>9999-12-30 00:00</td>
                 <td>
                   <button class="btn-dark-custom btn-sm">수정</button>
-                  <button class="btn-dark-custom btn-sm">이력</button>
                   <button class="btn-dark-custom btn-sm" onclick="openDeleteModal(this)">삭제</button>
                 </td>
               </tr>
@@ -624,7 +697,6 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
                 <td>9999-12-30 00:00</td>
                 <td>
                   <button class="btn-dark-custom btn-sm">수정</button>
-                  <button class="btn-dark-custom btn-sm">이력</button>
                   <button class="btn-dark-custom btn-sm" onclick="openDeleteModal(this)">삭제</button>
                 </td>
               </tr>
@@ -849,10 +921,208 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
         </div>
       `;
     }
-    
-    
+ // --- 보호대상 DB 관리 ---
+    else if (title === "보호대상 DB 관리") {
+      content.innerHTML = `
+        <h2>보호대상 DB 관리</h2>
+        <div class="d-flex justify-content-end mb-2">
+          <button class="btn btn-primary btn-sm" onclick="addDb()">DB 추가</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="table table-dark table-bordered text-center align-middle">
+            <thead>
+              <tr>
+                <th>DB 이름</th>
+                <th>IP</th>
+                <th>Port</th>
+                <th>위험도</th>
+                <th>최근 탐지 이벤트</th>
+                <th>암호화 적용</th>
+                <th>접속 로그</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="dbTableBody">
+              <tr>
+                <td>CustomerDB</td>
+                <td>192.168.0.10</td>
+                <td>3306</td>
+                <td><span class="badge bg-danger badge-lg">Critical</span></td>
+                <td>12건 (경고 7 / 차단 5)</td>
+                <td>적용</td>
+                <td>최근 24h: 120회 / 차단 5회</td>
+                <td>
+                <button class="btn-dark-custom btn-sm">수정</button>
+                <button class="btn-dark-custom btn-sm" onclick="openDeleteModal(this)">삭제</button>
+                </td>
+              </tr>
+              <tr>
+                <td>LogDB</td>
+                <td>192.168.0.20</td>
+                <td>5432</td>
+                <td><span class="badge bg-warning text-dark badge-lg">High</span></td>
+                <td>6건 (경고 6 / 차단 0)</td>
+                <td>미적용</td>
+                <td>최근 24h: 80회 / 차단 0회</td>
+                <td>
+                <button class="btn-dark-custom btn-sm">수정</button>
+                <button class="btn-dark-custom btn-sm" onclick="openDeleteModal(this)">삭제</button>
+                </td>
+              </tr>
+              <tr>
+                <td>PaymentDB</td>
+                <td>192.168.0.30</td>
+                <td>1521</td>
+                <td><span class="badge bg-success badge-lg">Low</span></td>
+                <td>0건 (경고 0 / 차단 0)</td>
+                <td>적용</td>
+                <td>최근 24h: 30회 / 차단 0회</td>
+                <td>
+                <button class="btn-dark-custom btn-sm">수정</button>
+                <button class="btn-dark-custom btn-sm" onclick="openDeleteModal(this)">삭제</button>
+              </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+    else if (title === "관리자 계정 관리") {
+    	  content.innerHTML = `
+    	    <h2>관리자 계정 관리</h2>
 
+    	    <!-- 상단 버튼 -->
+    	    <div class="mb-2">
+    	      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addAccountModal">+ 계정 등록</button>
+    	      <button class="btn btn-secondary btn-sm" id="editBtn">계정 수정</button>
+    	      <button class="btn btn-danger btn-sm" id="deleteBtn">계정 삭제</button>
+    	    </div>
 
+    	    <!-- 계정 목록 테이블 -->
+    	    <div class="table-wrapper">
+    	      <table class="table table-dark table-bordered text-center align-middle" id="accountTable">
+    	        <thead>
+    	          <tr>
+    	            <th>선택</th>
+    	            <th>아이디</th>
+    	            <th>이름</th>
+    	            <th>이메일</th>
+    	            <th>전화번호</th>
+    	            <th>권한</th>
+    	            <th>등록일</th>
+    	            <th>수정일</th>
+    	            <th>만료일</th>
+    	            <th>상태</th>
+    	          </tr>
+    	        </thead>
+    	        <tbody>
+    	          <tr>
+    	            <td><input type="checkbox"></td>
+    	            <td>admin01</td>
+    	            <td>최고관리자</td>
+    	            <td>admin01@security.com</td>
+    	            <td>010-1234-5678</td>
+    	            <td>최고관리자</td>
+    	            <td>2025-09-01</td>
+    	            <td>2025-09-20</td>
+    	            <td>2026-09-01</td>
+    	            <td><span class="badge bg-success badge-lg status-toggle">활성</span></td>
+    	          </tr>
+    	          <tr>
+    	            <td><input type="checkbox"></td>
+    	            <td>admin02</td>
+    	            <td>보안담당</td>
+    	            <td>admin02@security.com</td>
+    	            <td>010-9876-5432</td>
+    	            <td>관리자</td>
+    	            <td>2025-08-01</td>
+    	            <td>2025-08-20</td>
+    	            <td>2026-08-01</td>
+    	            <td><span class="badge bg-danger badge-lg status-toggle">비활성</span></td>
+    	          </tr>
+    	        </tbody>
+    	      </table>
+    	    </div>
+
+    	    <!-- 계정 등록 모달 -->
+    	    <div class="modal fade" id="addAccountModal" tabindex="-1">
+    	      <div class="modal-dialog modal-lg modal-dialog-centered">
+    	        <div class="modal-content bg-dark text-white">
+    	          <div class="modal-header">
+    	            <h5 class="modal-title">계정 등록</h5>
+    	            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    	          </div>
+    	          <div class="modal-body">
+    	            <form id="addAccountForm">
+    	              <div class="row g-2">
+    	                <div class="col-md-4"><label class="form-label">아이디</label><input type="text" name="id" class="form-control form-control-sm bg-dark text-white" required></div>
+    	                <div class="col-md-4"><label class="form-label">비밀번호</label><input type="password" name="password" class="form-control form-control-sm bg-dark text-white" required></div>
+    	                <div class="col-md-4"><label class="form-label">이름</label><input type="text" name="name" class="form-control form-control-sm bg-dark text-white"></div>
+    	                <div class="col-md-6"><label class="form-label">이메일</label><input type="email" name="email" class="form-control form-control-sm bg-dark text-white"></div>
+    	                <div class="col-md-6"><label class="form-label">전화번호</label><input type="text" name="phone" class="form-control form-control-sm bg-dark text-white"></div>
+    	                <div class="col-md-6"><label class="form-label">권한</label>
+    	                  <select name="role" class="form-select form-select-sm bg-dark text-white">
+    	                    <option>최고관리자</option>
+    	                    <option>관리자</option>
+    	                    <option>사용자</option>
+    	                  </select>
+    	                </div>
+    	                <div class="col-md-6"><label class="form-label">상태</label>
+    	                  <select name="status" class="form-select form-select-sm bg-dark text-white">
+    	                    <option value="활성">활성</option>
+    	                    <option value="비활성">비활성</option>
+    	                  </select>
+    	                </div>
+    	                <div class="col-md-6"><label class="form-label">만료일</label><input type="date" name="expire" class="form-control form-control-sm bg-dark text-white"></div>
+    	              </div>
+    	            </form>
+    	          </div>
+    	          <div class="modal-footer">
+    	            <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
+    	            <button class="btn btn-success btn-sm" onclick="saveAccount()">저장</button>
+    	          </div>
+    	        </div>
+    	      </div>
+    	    </div>
+    	  `;
+
+    	  // 새 계정 저장 기능
+    	  window.saveAccount = function() {
+    	    const form = document.getElementById("addAccountForm");
+    	    const data = Object.fromEntries(new FormData(form).entries());
+
+    	    if (!data.id || !data.password) {
+    	      alert("아이디와 비밀번호는 필수입니다!");
+    	      return;
+    	    }
+
+    	    const today = new Date().toISOString().split("T")[0];
+
+    	    // 테이블에 새 행 추가
+    	    const tbody = document.querySelector("#accountTable tbody");
+    	    const row = document.createElement("tr");
+    	    row.innerHTML = `
+    	      <td><input type="checkbox"></td>
+    	      <td>${data.id}</td>
+    	      <td>${data.name || "-"}</td>
+    	      <td>${data.email || "-"}</td>
+    	      <td>${data.phone || "-"}</td>
+    	      <td>${data.role}</td>
+    	      <td>${today}</td>
+    	      <td>${today}</td>
+    	      <td>${data.expire || "-"}</td>
+    	      <td><span class="badge ${data.status==="활성" ? "bg-success badge-lg" : "bg-danger badge-lg"}">${data.status}</span></td>
+    	    `;
+    	    tbody.appendChild(row);
+
+    	    // 모달 닫기
+    	    const modal = bootstrap.Modal.getInstance(document.getElementById("addAccountModal"));
+    	    modal.hide();
+    	    form.reset();
+    	  };
+    	}
+
+    
     // --- 준비중 ---
     else{
       content.innerHTML=`<h2>${title}</h2><p>준비중인 페이지입니다.</p>`;
@@ -880,8 +1150,6 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
       tbody.appendChild(row);
     });
   });
-
-  function logout(){window.location.href="index.html";}
 
   document.addEventListener("DOMContentLoaded", () => {
 	  // 첫 페이지 로드 시 '보안 이벤트 요약' 보여주기
@@ -974,8 +1242,123 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
 
     alert(`📂 [${db}] ${date} 데이터베이스를 ${path} 경로에서 복구 실행!`);
   }
+//보호대상 DB 추가 (예시)
+  function addDb() {
+    alert("DB 추가 기능은 추후 구현 예정입니다.");
+  }
 
+  // 수정 버튼
+  function editDb(btn) {
+    const row = btn.closest("tr");
+    const dbName = row.cells[0].innerText;
+    alert(dbName + " 수정 기능 실행");
+  }
+
+  // 삭제 버튼
+  function deleteDb(btn) {
+    if (confirm("정말 삭제하시겠습니까?")) {
+      btn.closest("tr").remove();
+    }
+  }
+  // 날짜 시간 수정 
+  function applyDateTime() {
+	  const date = document.getElementById("customDate").value;
+	  const time = document.getElementById("customTime").value;
+
+	  if (!date || !time) {
+	    alert("날짜와 시간을 모두 선택하세요!");
+	    return;
+	  }
+
+	  alert(`📅 선택된 날짜/시간: ${date} ${time}`);
+	  // 여기서 차트 데이터 다시 불러오기 같은 동작 넣을 수 있음
+	}
+  function logout() {
+	  fetch("/logout", { method: "POST" })
+	    .then(() => {
+	      window.location.href = "/login";  // 로그아웃 후 로그인 페이지로 이동
+	    })
+	    .catch(err => console.error("로그아웃 실패:", err));
+	}
   
+//관리자 계정 관리 - 수정/삭제 버튼 이벤트 위임
+document.getElementById("mainContent").addEventListener("click", (e) => {
+  // 계정 수정
+  if (e.target && e.target.id === "editBtn") {
+    const checked = document.querySelectorAll("#accountTable tbody input[type='checkbox']:checked");
+
+    if (checked.length === 0) {
+      showAlert("수정할 계정을 선택하세요.");
+      return;
+    }
+    if (checked.length > 1) {
+      showAlert("⚠️ 계정 수정은 한 번에 하나만 가능합니다.");
+      return;
+    }
+
+    const row = checked[0].closest("tr");
+    const cells = row.querySelectorAll("td");
+
+    const form = document.getElementById("addAccountForm");
+    form.elements["id"].value = cells[1].innerText;
+    form.elements["name"].value = cells[2].innerText;
+    form.elements["email"].value = cells[3].innerText;
+    form.elements["phone"].value = cells[4].innerText;
+    form.elements["role"].value = cells[5].innerText;
+    form.elements["expire"].value = cells[8].innerText !== "-" ? cells[8].innerText : "";
+    form.elements["status"].value = cells[9].innerText.trim();
+
+    form.dataset.editingRow = row.rowIndex;
+
+    const modal = new bootstrap.Modal(document.getElementById("addAccountModal"));
+    modal.show();
+  }
+
+  // 계정 삭제
+  if (e.target && e.target.id === "deleteBtn") {
+    const checked = document.querySelectorAll("#accountTable tbody input[type='checkbox']:checked");
+
+    if (checked.length === 0) {
+      showAlert("삭제할 계정을 선택하세요.");
+      return;
+    }
+
+    showConfirm("선택한 계정을 삭제하시겠습니까?", () => {
+      checked.forEach(cb => cb.closest("tr").remove());
+    });
+  }
+
+  // 상태 뱃지 클릭 시
+  if (e.target.classList.contains("status-toggle")) {
+    const badge = e.target;
+    const current = badge.innerText.trim();
+    const next = current === "활성" ? "비활성" : "활성";
+
+    showConfirm(`정말 "${next}" 상태로 변경하시겠습니까?`, () => {
+      badge.innerText = next;
+      badge.className = `badge badge-lg ${next === "활성" ? "bg-success" : "bg-danger"} status-toggle`;
+    });
+  }
+});
+
+  function showAlert(msg) {
+	  document.getElementById("alertMessage").innerText = msg;
+	  new bootstrap.Modal(document.getElementById("alertModal")).show();
+	}
+//confirm 대체 함수
+  function showConfirm(msg, onOk) {
+    document.getElementById("confirmMessage").innerText = msg;
+    const modalEl = document.getElementById("confirmModal");
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    // 확인 버튼 클릭 시 콜백 실행
+    document.getElementById("confirmOkBtn").onclick = () => {
+      modal.hide();
+      if (typeof onOk === "function") onOk();
+    };
+  }
+
   </script>
 </body>
 </html>
