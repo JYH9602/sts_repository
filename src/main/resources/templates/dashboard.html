@@ -72,6 +72,16 @@
     .battery { width:100px; height:25px; border:2px solid #fff; position:relative; margin:auto; }
     .battery::after { content:""; position:absolute; right:-6px; top:5px; width:4px; height:15px; background:#fff; }
     .battery-level { height:100%; width:70%; background:limegreen; }
+    
+    .packet-box {
+  		background:#111;
+  		color:#0f0;
+ 		 padding:10px;
+ 		 font-size:13px;
+ 		 white-space:pre;
+  		border-radius:5px;
+  		display:none;
+}
   </style>
 </head>
 <body onload="loadContent('보안 이벤트 요약')">
@@ -424,6 +434,44 @@
         </div>
       `;
     }
+    // ====== 탐지로그 =======
+    else if(title === "탐지 로그") {
+    	  content.innerHTML = `
+    	    <h2>탐지 로그</h2>
+    	    <table class="table table-dark table-bordered text-center">
+    	      <thead>
+    	        <tr>
+    	          <th>탐지 시각</th>
+    	          <th>정책명/탐지규칙</th>
+    	          <th>위험도</th>
+    	          <th>탐지 유형</th>
+    	          <th>출발지 IP</th>
+    	          <th>출발지 Port</th>
+    	          <th>목적지 IP</th>
+    	          <th>목적지 Port</th>
+    	          <th>작업</th>
+    	        </tr>
+    	      </thead>
+    	      <tbody>
+    	        <tr>
+    	          <td>2025-09-16 10:00</td>
+    	          <td>SQL Injection</td>
+    	          <td><span class="badge bg-danger">High</span></td>
+    	          <td>Web Attack</td>
+    	          <td>192.168.1.10</td>
+    	          <td>12345</td>
+    	          <td>10.0.0.5</td>
+    	          <td>80</td>
+    	          <td>
+    	            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#logDetailModal">
+    	              상세
+    	            </button>
+    	          </td>
+    	        </tr>
+    	      </tbody>
+    	    </table>
+    	  `;
+    	}
 
     // --- 준비중 ---
     else{
@@ -454,9 +502,15 @@
   });
 
   function logout(){window.location.href="index.html";}
-  let seconds=0;
-  setInterval(()=>{seconds++;let m=String(Math.floor(seconds/60)).padStart(2,'0');
-    let s=String(seconds%60).padStart(2,'0');document.getElementById("timer").textContent=`${m}:${s}`;},1000);
+
+//로그인 경과시간 타이머
+  let seconds = 0;
+  setInterval(() => {
+    seconds++;
+    let m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    let s = String(seconds % 60).padStart(2, '0');
+    document.getElementById("timer").textContent = `${m}:${s}`;
+  }, 1000);
   
   function confirmDelete() {
 	  const input = document.getElementById("deletePassword").value;
@@ -487,6 +541,10 @@
 	  }
 	}
   
+  function togglePacket() {
+	  const box = document.getElementById("packetBox");
+	  box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
+	}
   
   </script>
   <!-- 정책 편집 모달 -->
@@ -595,6 +653,43 @@
             <tr><td colspan="5">삭제된 항목이 없습니다.</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 탐지로그 상세 모달 -->
+<div class="modal fade" id="logDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">상세 정보</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6>요약 정보</h6>
+        <ul>
+          <li>시간: 2025-09-16 10:00</li>
+          <li>정책명: SQL Injection</li>
+          <li>위험도: <span class="badge bg-danger">High</span></li>
+          <li>탐지 유형: Web Attack</li>
+          <li>출발지 IP: 192.168.1.10</li>
+          <li>목적지 IP: 10.0.0.5</li>
+        </ul>
+
+        <h6 class="mt-3">패킷 해석 내용</h6>
+        <p><strong>HTTP 요청:</strong> GET /login.php?id=1' OR '1'='1 HTTP/1.1</p>
+        <p><strong>Host:</strong> victim.com</p>
+        <p><strong>User-Agent:</strong> Mozilla/5.0 …</p>
+
+        <button class="btn btn-secondary btn-sm mt-2" onclick="togglePacket()">원본 패킷 보기</button>
+        <div id="packetBox" class="packet-box mt-2">
+4500 003c 1c46 4000 4006 b1e6 c0a8 0001
+c0a8 0067 0050 89ab 1190 0000 0000 0000
+5018 ffff aaaa bbbb 4745 5420 2f6c 6f67
+696e 2e70 6870 3f69 643d 3127 204f 5220
+3127 3d31 2048 5454 502f 312e 31
+        </div>
       </div>
     </div>
   </div>
