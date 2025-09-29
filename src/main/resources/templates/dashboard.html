@@ -788,6 +788,70 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
         </div>
       `;
     }
+ // --- 백업 & 복구 ---
+    else if (title === "백업 & 복구") {
+      content.innerHTML = `
+        <h2>DB 백업 & 복구</h2>
+
+        <!-- 백업 설정 -->
+        <div class="box mb-3">
+          <h5>백업 설정</h5>
+          <div class="mb-2">
+            <label class="form-label">DB 선택</label>
+            <select class="form-select bg-dark text-white form-select-sm" id="dbSelect">
+              <option>MySQL</option>
+              <option>PostgreSQL</option>
+              <option>MariaDB</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">백업 경로</label>
+            <input type="text" id="backupPath" class="form-control bg-dark text-white" value="/backup/db/">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="runBackup()">백업 실행</button>
+          <div class="progress mt-2" style="height:20px;">
+            <div id="backupProgress" class="progress-bar bg-success" role="progressbar" style="width:0%;">0%</div>
+          </div>
+        </div>
+
+        <!-- 백업 스케줄 설정 -->
+        <div class="box mb-3">
+          <h5>백업 스케줄 설정</h5>
+          <div class="mb-2">
+            <input type="radio" name="backupSchedule" value="daily"> 매일
+            <input type="radio" name="backupSchedule" value="weekly"> 매주
+            <input type="radio" name="backupSchedule" value="monthly"> 매월
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="saveSchedule()">저장</button>
+          <p id="scheduleStatus" class="mt-2 text-info">백업 스케줄: 미설정</p>
+        </div>
+
+        <!-- 복구 실행 -->
+        <div class="box">
+          <h5>복구 실행</h5>
+          <div class="mb-2">
+            <label class="form-label">복구 날짜</label>
+            <input type="date" id="restoreDate" class="form-control bg-dark text-white">
+          </div>
+          <button class="btn btn-info btn-sm" onclick="runRestore()">복구</button>
+          <div class="mt-2">
+            <label class="form-label">DB 선택</label>
+            <select class="form-select bg-dark text-white form-select-sm" id="restoreDbSelect">
+              <option>MySQL</option>
+              <option>PostgreSQL</option>
+              <option>MariaDB</option>
+            </select>
+          </div>
+          <div class="mt-2">
+            <label class="form-label">복구 경로</label>
+            <input type="text" id="restorePath" class="form-control bg-dark text-white" placeholder="/backup/db/yyyy-mm-dd/">
+          </div>
+        </div>
+      `;
+    }
+    
+    
+
 
     // --- 준비중 ---
     else{
@@ -869,6 +933,48 @@ c0a8 0067 0050 89ab 1190 0000 0000 0000
 	  const box = document.getElementById("packetBox");
 	  box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
 	}
+  
+//백업 실행 (프로그레스 바)
+  function runBackup() {
+    let progress = 0;
+    const bar = document.getElementById("backupProgress");
+    const interval = setInterval(() => {
+      if (progress >= 100) {
+        clearInterval(interval);
+        bar.innerText = "완료";
+      } else {
+        progress += 10;
+        bar.style.width = progress + "%";
+        bar.innerText = progress + "%";
+      }
+    }, 300);
+  }
+
+  // 백업 스케줄 저장
+  function saveSchedule() {
+    const selected = document.querySelector("input[name='backupSchedule']:checked");
+    const status = document.getElementById("scheduleStatus");
+    if (selected) {
+      status.innerText = "백업 스케줄: " + selected.value + " 로 저장됨";
+    } else {
+      status.innerText = "스케줄이 선택되지 않았습니다.";
+    }
+  }
+
+  // 복구 실행
+  function runRestore() {
+    const date = document.getElementById("restoreDate").value;
+    const db = document.getElementById("restoreDbSelect").value;
+    const path = document.getElementById("restorePath").value;
+
+    if (!date || !path) {
+      alert("복구 날짜와 경로를 입력하세요.");
+      return;
+    }
+
+    alert(`📂 [${db}] ${date} 데이터베이스를 ${path} 경로에서 복구 실행!`);
+  }
+
   
   </script>
 </body>
