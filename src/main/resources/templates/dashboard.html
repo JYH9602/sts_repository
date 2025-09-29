@@ -5,7 +5,7 @@
   <title>CEW 대시보드</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/gh/joungkyun/font-d2coding/d2coding.css" rel="stylesheet" type="text/css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <style>
     body { margin:0; font-family:'D2Coding', monospace; background:#000; color:#ddd; overflow-y:scroll; }
 
@@ -101,7 +101,7 @@
 
   </style>
 </head>
-<body onload="loadContent('보안 이벤트 요약')">
+<body>
   <!-- 사이드바 -->
   <div class="sidebar">
     <div class="logo-wrapper" onclick="loadContent('보안 이벤트 요약')">
@@ -155,6 +155,206 @@
   <!-- 메인 -->
  <div class="content" id="mainContent"></div>
 
+
+  <!-- 정책 편집 모달 -->
+<div class="modal fade" id="policyModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">정책 편집 (신규)</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- 기본 -->
+        <div class="card mb-3 bg-secondary bg-opacity-25 p-3">
+          <h6>기본</h6>
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">rule_id</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="CEW_BLOCK01"></div>
+            <div class="col-md-4"><label class="form-label">rule_name</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="도둑잡기"></div>
+            <div class="col-md-2"><label class="form-label">priority</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="1"></div>
+            <div class="col-md-2"><label class="form-label">action</label>
+              <select class="form-select form-select-sm bg-dark text-white"><option>block</option><option>pass</option></select>
+            </div>
+            <div class="col-md-3"><label class="form-label">level</label>
+              <select class="form-select form-select-sm bg-dark text-white"><option>safe</option><option>danger</option></select>
+            </div>
+            <div class="col-md-3"><label class="form-label">rule_type</label>
+              <select class="form-select form-select-sm bg-dark text-white"><option>pattern</option><option>behavior</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 대상 / 조건 -->
+        <div class="card mb-3 bg-secondary bg-opacity-25 p-3">
+          <h6>대상 / 조건</h6>
+          <div class="row g-2">
+            <div class="col-md-3"><label class="form-label">ip_start</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="192.168.1.10"></div>
+            <div class="col-md-3"><label class="form-label">ip_end</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="192.168.1.20"></div>
+            <div class="col-md-3"><label class="form-label">port_start</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="22"></div>
+            <div class="col-md-3"><label class="form-label">port_end</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="30"></div>
+            <div class="col-md-4"><label class="form-label">block_duration (sec)</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="0"></div>
+            <div class="col-md-4"><label class="form-label">base_cnt</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="0"></div>
+          </div>
+        </div>
+
+        <!-- 스케줄 -->
+        <div class="card mb-3 bg-secondary bg-opacity-25 p-3">
+          <h6>스케줄</h6>
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">effective_from</label><input type="time" class="form-control form-control-sm bg-dark text-white"></div>
+            <div class="col-md-4"><label class="form-label">effective_to</label><input type="time" class="form-control form-control-sm bg-dark text-white"></div>
+            <div class="col-md-4"><label class="form-label">expire_dt</label><input type="date" class="form-control form-control-sm bg-dark text-white"></div>
+            <div class="col-md-4"><label class="form-label">created_by</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="admin" readonly></div>
+            <div class="col-md-4"><label class="form-label">updated_by</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="admin" readonly></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
+        <button type="button" class="btn btn-primary btn-sm">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
+<!-- 삭제 확인 모달 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">삭제 확인</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>정책을 삭제하려면 암호를 입력하세요.</p>
+        <input type="password" id="deletePassword" class="form-control form-control-sm bg-dark text-white" placeholder="삭제 암호 입력">
+        <div id="deleteError" class="text-danger mt-2" style="display:none;">암호가 올바르지 않습니다.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete()">삭제</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 삭제된 항목 보기 모달 -->
+<div class="modal fade" id="deletedListModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">삭제된 정책 목록</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-dark table-striped text-center">
+          <thead>
+            <tr>
+              <th>rule_id</th>
+              <th>rule_name</th>
+              <th>level</th>
+              <th>rule_type</th>
+              <th>action</th>
+            </tr>
+          </thead>
+          <tbody id="deletedPolicyList">
+            <tr><td colspan="5">삭제된 항목이 없습니다.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 탐지로그 상세 모달 -->
+<div class="modal fade" id="logDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">상세 정보</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6>요약 정보</h6>
+        <ul>
+          <li>시간: 2025-09-16 10:00</li>
+          <li>정책명: SQL Injection</li>
+          <li>위험도: <span class="badge bg-danger">High</span></li>
+          <li>탐지 유형: Web Attack</li>
+          <li>출발지 IP: 192.168.1.10</li>
+          <li>목적지 IP: 10.0.0.5</li>
+        </ul>
+
+        <h6 class="mt-3">패킷 해석 내용</h6>
+        <p><strong>HTTP 요청:</strong> GET /login.php?id=1' OR '1'='1 HTTP/1.1</p>
+        <p><strong>Host:</strong> victim.com</p>
+        <p><strong>User-Agent:</strong> Mozilla/5.0 …</p>
+
+        <button class="btn btn-secondary btn-sm mt-2" onclick="togglePacket()">원본 패킷 보기</button>
+        <div id="packetBox" class="packet-box mt-2">
+4500 003c 1c46 4000 4006 b1e6 c0a8 0001
+c0a8 0067 0050 89ab 1190 0000 0000 0000
+5018 ffff aaaa bbbb 4745 5420 2f6c 6f67
+696e 2e70 6870 3f69 643d 3127 204f 5220
+3127 3d31 2048 5454 502f 312e 31
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 알림로그 상세 모달 -->
+<div class="modal fade" id="alertLogModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">알림 로그 상세</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6>요약 정보</h6>
+        <ul>
+          <li>알림 시각: 2025-09-16 09:50</li>
+          <li>알림 대상자: admin01 (admin@test.com)</li>
+          <li>알림 방식: Email</li>
+          <li>알림 등급: 긴급</li>
+          <li>관련 탐지 이벤트 ID: DET-00123</li>
+          <li>알림 내용: 고위험 SQL Injection 탐지됨</li>
+          <li>발송 상태: 성공</li>
+        </ul>
+
+        <button class="btn btn-secondary btn-sm mt-2" onclick="togglePacket()">원본 패킷 보기</button>
+        <div id="packetBox" class="packet-box mt-2">
+알림 로그는 패킷 데이터가 없을 수도 있습니다.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 차단 이력 로그 상세 모달 -->
+<div class="modal fade" id="blockLogModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">차단 이력 로그 상세</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6>요약 정보</h6>
+        <ul>
+          <li>차단 시각: 2025-09-15 14:30</li>
+          <li>정책명/룰 ID: Port Scan Rule #12</li>
+          <li>차단 대상: 203.0.113.77</li>
+          <li>출발지: 203.0.113.77:55555</li>
+          <li>목적지: 10.0.0.7:22</li>
+          <li>차단 사유: 비인가 포트 접근</li>
+          <li>차단 결과: <span class="badge bg-success badge-lg">성공</span></li>
+          <li>차단 지속시간: 10분</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
   // 메뉴 토글
   document.querySelectorAll(".has-sub").forEach(menu=>{
@@ -174,24 +374,6 @@
     rowToDelete = btn.closest("tr");
     const modal = new bootstrap.Modal(document.getElementById("deleteModal"));
     modal.show();
-  }
-
-  function confirmDelete() {
-    const input = document.getElementById("deletePassword").value;
-    const errorBox = document.getElementById("deleteError");
-
-    if (input === "admin123") {
-      errorBox.style.display = "none";
-
-      if (rowToDelete) {
-        rowToDelete.remove();  // ✅ 실제 행 삭제
-      }
-
-      const modal = bootstrap.Modal.getInstance(document.getElementById("deleteModal"));
-      modal.hide();
-    } else {
-      errorBox.style.display = "block";
-    }
   }
 
   function loadContent(title) {
@@ -413,7 +595,7 @@
               <tr>
                 <td>CEW_PASS01</td>
                 <td>내부허용</td>
-                <td><span class="badge bg-success">safe</span></td>
+                <td><span class="badge bg-success badge-lg">safe</span></td>
                 <td>pattern</td>
                 <td>pass</td>
                 <td>10.0.0.1 ~ 10.0.0.255</td>
@@ -431,7 +613,7 @@
               <tr>
                 <td>CEW_BLOCK02</td>
                 <td>SQL Injection 차단</td>
-                <td><span class="badge bg-danger">danger</span></td>
+                <td><span class="badge bg-danger badge-lg">danger</span></td>
                 <td>pattern</td>
                 <td>block</td>
                 <td>*</td>
@@ -578,7 +760,6 @@
               </tr>
             </thead>
             <tbody>
-            <tbody>
             <!-- 정상 활동 -->
             <tr>
               <td>2025-09-15 11:00</td>
@@ -638,14 +819,22 @@
 
   function logout(){window.location.href="index.html";}
 
-//로그인 경과시간 타이머
-  let seconds = 0;
-  setInterval(() => {
-    seconds++;
-    let m = String(Math.floor(seconds / 60)).padStart(2, '0');
-    let s = String(seconds % 60).padStart(2, '0');
-    document.getElementById("timer").textContent = `${m}:${s}`;
-  }, 1000);
+  document.addEventListener("DOMContentLoaded", () => {
+	  // 첫 페이지 로드 시 '보안 이벤트 요약' 보여주기
+	  loadContent('보안 이벤트 요약');
+
+	  // 로그인 경과시간 타이머 시작
+	  let seconds = 0;
+	  setInterval(() => {
+	    seconds++;
+	    let m = String(Math.floor(seconds / 60)).padStart(2, '0');
+	    let s = String(seconds % 60).padStart(2, '0');
+	    const timerEl = document.getElementById("timer");
+	    if (timerEl) {
+	      timerEl.textContent = `${m}:${s}`;
+	    }
+	  }, 1000);
+	});
   
   function confirmDelete() {
 	  const input = document.getElementById("deletePassword").value;
@@ -682,205 +871,5 @@
 	}
   
   </script>
-  <!-- 정책 편집 모달 -->
-<div class="modal fade" id="policyModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h5 class="modal-title">정책 편집 (신규)</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        
-        <!-- 기본 -->
-        <div class="card mb-3 bg-secondary bg-opacity-25 p-3">
-          <h6>기본</h6>
-          <div class="row g-2">
-            <div class="col-md-4"><label class="form-label">rule_id</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="CEW_BLOCK01"></div>
-            <div class="col-md-4"><label class="form-label">rule_name</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="도둑잡기"></div>
-            <div class="col-md-2"><label class="form-label">priority</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="1"></div>
-            <div class="col-md-2"><label class="form-label">action</label>
-              <select class="form-select form-select-sm bg-dark text-white"><option>block</option><option>pass</option></select>
-            </div>
-            <div class="col-md-3"><label class="form-label">level</label>
-              <select class="form-select form-select-sm bg-dark text-white"><option>safe</option><option>danger</option></select>
-            </div>
-            <div class="col-md-3"><label class="form-label">rule_type</label>
-              <select class="form-select form-select-sm bg-dark text-white"><option>pattern</option><option>behavior</option></select>
-            </div>
-          </div>
-        </div>
-
-        <!-- 대상 / 조건 -->
-        <div class="card mb-3 bg-secondary bg-opacity-25 p-3">
-          <h6>대상 / 조건</h6>
-          <div class="row g-2">
-            <div class="col-md-3"><label class="form-label">ip_start</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="192.168.1.10"></div>
-            <div class="col-md-3"><label class="form-label">ip_end</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="192.168.1.20"></div>
-            <div class="col-md-3"><label class="form-label">port_start</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="22"></div>
-            <div class="col-md-3"><label class="form-label">port_end</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="30"></div>
-            <div class="col-md-4"><label class="form-label">block_duration (sec)</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="0"></div>
-            <div class="col-md-4"><label class="form-label">base_cnt</label><input type="number" class="form-control form-control-sm bg-dark text-white" value="0"></div>
-          </div>
-        </div>
-
-        <!-- 스케줄 -->
-        <div class="card mb-3 bg-secondary bg-opacity-25 p-3">
-          <h6>스케줄</h6>
-          <div class="row g-2">
-            <div class="col-md-4"><label class="form-label">effective_from</label><input type="time" class="form-control form-control-sm bg-dark text-white"></div>
-            <div class="col-md-4"><label class="form-label">effective_to</label><input type="time" class="form-control form-control-sm bg-dark text-white"></div>
-            <div class="col-md-4"><label class="form-label">expire_dt</label><input type="date" class="form-control form-control-sm bg-dark text-white"></div>
-            <div class="col-md-4"><label class="form-label">created_by</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="admin" readonly></div>
-            <div class="col-md-4"><label class="form-label">updated_by</label><input type="text" class="form-control form-control-sm bg-dark text-white" value="admin" readonly></div>
-          </div>
-        </div>
-
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
-        <button type="button" class="btn btn-primary btn-sm">저장</button>
-      </div>
-    </div>
-  </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- 삭제 확인 모달 -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h5 class="modal-title">삭제 확인</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p>정책을 삭제하려면 암호를 입력하세요.</p>
-        <input type="password" id="deletePassword" class="form-control form-control-sm bg-dark text-white" placeholder="삭제 암호 입력">
-        <div id="deleteError" class="text-danger mt-2" style="display:none;">암호가 올바르지 않습니다.</div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDelete()">삭제</button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- 삭제된 항목 보기 모달 -->
-<div class="modal fade" id="deletedListModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h5 class="modal-title">삭제된 정책 목록</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <table class="table table-dark table-striped text-center">
-          <thead>
-            <tr>
-              <th>rule_id</th>
-              <th>rule_name</th>
-              <th>level</th>
-              <th>rule_type</th>
-              <th>action</th>
-            </tr>
-          </thead>
-          <tbody id="deletedPolicyList">
-            <tr><td colspan="5">삭제된 항목이 없습니다.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 탐지로그 상세 모달 -->
-<div class="modal fade" id="logDetailModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h5 class="modal-title">상세 정보</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <h6>요약 정보</h6>
-        <ul>
-          <li>시간: 2025-09-16 10:00</li>
-          <li>정책명: SQL Injection</li>
-          <li>위험도: <span class="badge bg-danger">High</span></li>
-          <li>탐지 유형: Web Attack</li>
-          <li>출발지 IP: 192.168.1.10</li>
-          <li>목적지 IP: 10.0.0.5</li>
-        </ul>
-
-        <h6 class="mt-3">패킷 해석 내용</h6>
-        <p><strong>HTTP 요청:</strong> GET /login.php?id=1' OR '1'='1 HTTP/1.1</p>
-        <p><strong>Host:</strong> victim.com</p>
-        <p><strong>User-Agent:</strong> Mozilla/5.0 …</p>
-
-        <button class="btn btn-secondary btn-sm mt-2" onclick="togglePacket()">원본 패킷 보기</button>
-        <div id="packetBox" class="packet-box mt-2">
-4500 003c 1c46 4000 4006 b1e6 c0a8 0001
-c0a8 0067 0050 89ab 1190 0000 0000 0000
-5018 ffff aaaa bbbb 4745 5420 2f6c 6f67
-696e 2e70 6870 3f69 643d 3127 204f 5220
-3127 3d31 2048 5454 502f 312e 31
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- 알림로그 상세 모달 -->
-<div class="modal fade" id="alertLogModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h5 class="modal-title">알림 로그 상세</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <h6>요약 정보</h6>
-        <ul>
-          <li>알림 시각: 2025-09-16 09:50</li>
-          <li>알림 대상자: admin01 (admin@test.com)</li>
-          <li>알림 방식: Email</li>
-          <li>알림 등급: 긴급</li>
-          <li>관련 탐지 이벤트 ID: DET-00123</li>
-          <li>알림 내용: 고위험 SQL Injection 탐지됨</li>
-          <li>발송 상태: 성공</li>
-        </ul>
-
-        <button class="btn btn-secondary btn-sm mt-2" onclick="togglePacket()">원본 패킷 보기</button>
-        <div id="packetBox" class="packet-box mt-2">
-알림 로그는 패킷 데이터가 없을 수도 있습니다.
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- 차단 이력 로그 상세 모달 -->
-<div class="modal fade" id="blockLogModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h5 class="modal-title">차단 이력 로그 상세</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <h6>요약 정보</h6>
-        <ul>
-          <li>차단 시각: 2025-09-15 14:30</li>
-          <li>정책명/룰 ID: Port Scan Rule #12</li>
-          <li>차단 대상: 203.0.113.77</li>
-          <li>출발지: 203.0.113.77:55555</li>
-          <li>목적지: 10.0.0.7:22</li>
-          <li>차단 사유: 비인가 포트 접근</li>
-          <li>차단 결과: <span class="badge bg-success badge-lg">성공</span></li>
-          <li>차단 지속시간: 10분</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
