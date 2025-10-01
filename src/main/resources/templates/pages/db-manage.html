@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<h2>보호대상 DB 관리</h2>
+<button class="btn btn-primary btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#addDbModal">+ DB 등록</button>
+
+<table class="table table-dark text-center">
+  <thead><tr><th>DB ID</th><th>DB 이름</th><th>IP</th><th>포트</th><th>작업</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>DB01</td><td>고객DB</td><td>10.0.0.5</td><td>3306</td>
+      <td>
+        <button class="btn-dark-custom btn-sm">수정</button>
+        <button class="btn-dark-custom btn-sm">삭제</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- DB 등록 모달 -->
+<div class="modal fade" id="addDbModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">DB 등록</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input class="form-control bg-dark text-white mb-2" placeholder="DB 이름">
+        <input class="form-control bg-dark text-white mb-2" placeholder="IP 주소">
+        <input class="form-control bg-dark text-white" placeholder="포트 번호">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
+        <button class="btn btn-success btn-sm">등록</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// DB 등록 모달
+document.querySelector("#addDbModal .btn-success").addEventListener("click", () => {
+  const dbName = document.querySelector("#addDbModal input[placeholder='DB 이름']").value;
+  const dbIp = document.querySelector("#addDbModal input[placeholder='IP 주소']").value;
+  const dbPort = document.querySelector("#addDbModal input[placeholder='포트 번호']").value;
+
+  if (!dbName || !dbIp || !dbPort) {
+    showAlert("모든 항목을 입력하세요.");
+    return;
+  }
+
+  console.log("DB 등록:", dbName, dbIp, dbPort);
+  showAlert("DB가 등록되었습니다.");
+  bootstrap.Modal.getInstance(document.getElementById("addDbModal")).hide();
+});
+</script>
+
+</body>
+</html>

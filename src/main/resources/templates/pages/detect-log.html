@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<h2>탐지 로그</h2>
+<div class="table-wrapper">
+  <table class="table table-dark table-striped text-center">
+    <thead>
+      <tr><th>시간</th><th>IP</th><th>탐지유형</th><th>위험도</th><th>상세</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>2025-10-01 12:00</td><td>192.168.0.5</td><td>SQL Injection</td>
+        <td><span class="badge bg-danger">High</span></td>
+        <td><button class="btn-dark-custom btn-sm" data-bs-toggle="modal" data-bs-target="#packetModal">보기</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 패킷 보기 모달 -->
+<div class="modal fade" id="packetModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">패킷 상세</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body"><pre>HEX 데이터...</pre></div>
+    </div>
+  </div>
+</div>
+<script>
+// 패킷 보기 모달 열기
+function showPacketDetail() {
+  const modal = new bootstrap.Modal(document.getElementById("packetModal"));
+  document.querySelector("#packetModal pre").textContent = "예시 HEX 데이터 00 11 22 ...";
+  modal.show();
+}
+</script>
+
+</body>
+</html>

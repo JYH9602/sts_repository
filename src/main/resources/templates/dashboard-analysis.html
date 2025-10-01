@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<div class="dashboard">
+  <div class="top-filter mb-2">
+    <div class="row g-2">
+      <div class="col-md-2">
+        <select class="form-select bg-dark text-white form-select-sm">
+          <option>행동기반</option><option>패턴기반</option><option>정책기반</option>
+        </select>
+      </div>
+      <div class="col-md-3"><input type="date" class="form-control bg-dark text-white form-select-sm"></div>
+      <div class="col-md-3"><input type="time" class="form-control bg-dark text-white form-select-sm"></div>
+      <div class="col-md-2 ms-auto text-end">
+        <button class="btn-dark-custom btn-sm me-2">적용</button>
+        <button class="btn-dark-custom btn-sm">초기화</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8 d-flex flex-column gap-2">
+      <div class="card flex-fill"><h5>시간대별 탐지</h5><canvas id="timeChart"></canvas></div>
+      <div class="card flex-fill"><h5>탐지 TOP 10</h5><canvas id="top10Chart"></canvas></div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100"><h5>위험도 분포</h5><canvas id="riskChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-12 box text-center">
+      날짜 설정 :
+      <input type="date" id="customDate" class="form-control d-inline-block bg-dark text-white form-select-sm" style="width:auto;">　
+      시간 설정 :
+      <input type="time" id="customTime" class="form-control d-inline-block bg-dark text-white form-select-sm" style="width:auto;">
+      <button class="btn-dark-custom btn-sm ms-2" onclick="applyDateTime()">적용</button>
+    </div>
+  </div>
+</div>
+
+<script>
+new Chart(document.getElementById('timeChart'), {
+  type:'line',
+  data:{
+    labels:['00시','03시','06시','09시','12시'],
+    datasets:[{label:'탐지 건수',data:[3,7,5,12,9],borderColor:'red',fill:false}]
+  }
+});
+new Chart(document.getElementById('top10Chart'), {
+  type:'bar',
+  data:{
+    labels:['SQL Injection','Brute Force','Critical','Port Scan'],
+    datasets:[{label:'탐지 건수',data:[20,15,8,5],backgroundColor:['#ff4d4d','#ff9933','#3399ff','#ffcc00']}]
+  }
+});
+new Chart(document.getElementById('riskChart'), {
+  type:'doughnut',
+  data:{
+    labels:['Critical','High','Medium','Low'],
+    datasets:[{data:[11,71,87,101],backgroundColor:['#ff4d4d','#ff9933','#ffcc00','#27ae60']}]
+  }
+});
+</script>
+
+</body>
+</html>

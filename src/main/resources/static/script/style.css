@@ -1,0 +1,120 @@
+body {
+  margin: 0;
+  font-family: 'D2Coding', monospace;
+  background: #000;
+  color: #ddd;
+  overflow-y: scroll;
+}
+
+/* 🚀 빨간 레이저 느낌 스크롤바 */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #111;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff0000, #990000);
+  border-radius: 5px;
+  box-shadow: 0 0 10px #ff0000, 0 0 20px #ff3333;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff3333, #cc0000);
+  box-shadow: 0 0 15px #ff0000, 0 0 30px #ff3333;
+}
+
+/* 사이드바 */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100%;
+  background: #000;
+  color: #fff;
+  padding: 20px 10px;
+  border-right: 1px solid #333;
+  overflow-y: auto;
+}
+.logo-wrapper {
+  text-align: center;
+  margin-bottom: 30px;
+  cursor: pointer;
+}
+.logo-wrapper img {
+  width: 140px;
+}
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.menu > li {
+  margin: 8px 0;
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.menu > li:hover {
+  color: #ff0000;
+}
+.menu li.active {
+  border: 1px solid #ff4d4d;
+  border-radius: 6px;
+  padding: 3px 6px;
+  background: rgba(255, 0, 0, 0.15);
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+/* 헤더 */
+.content {
+  margin-left: 260px;
+  padding: 80px 20px 20px 20px;
+}
+.header {
+  background: #000;
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-bottom: 1px solid #333;
+  gap: 15px;
+  position: fixed;
+  top: 0;
+  left: 240px;
+  right: 0;
+  z-index: 1000;
+}
+#timer, #loginUser {
+  color: #ffff00;
+}
+#userRole {
+  color: #ffff00;
+  text-shadow: 0 0 5px #ffff00, 0 0 10px #ffea00;
+}
+.btn-danger {
+  background: #ff0000;
+  border: none;
+}
+
+/* 공통 박스 */
+.box {
+  border: none;
+  background: #111;
+  padding: 10px;
+  color: #ddd;
+}
+table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+  color: #ddd;
+}
+th, td {
+  border-bottom: 1px solid #444;
+  padding: 3px;
+  text-align: center;
+}

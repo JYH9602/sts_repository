@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<h2>리소스 사용현황</h2>
+<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:15px;">
+  <div class="box text-center"><h5>CPU</h5><div id="cpuUsage" style="font-size:20px;">0%</div></div>
+  <div class="box text-center"><h5>메모리</h5><div id="memoryUsage" style="font-size:20px;">0%</div></div>
+  <div class="box text-center"><h5>스토리지</h5><div id="storageUsage" style="font-size:20px;">0%</div></div>
+  <div class="box text-center"><h5>네트워크</h5><div id="networkUsage" style="font-size:20px;">0 Mbps</div></div>
+</div>
+
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:15px;">
+  <div class="box"><h5>리소스 트렌드</h5><canvas id="resourceTrend"></canvas></div>
+  <div class="box"><h5>알림 & 상태</h5>
+    <ul style="font-size:13px; list-style:none; padding-left:0;">
+      <li>09:10 - 스토리지 사용률 80% 근접 (경고)</li>
+      <li>04:25 - CPU 스파이크 감지</li>
+      <li>어제 22:11 - 네트워크 RX 비정상</li>
+    </ul>
+    <button class="btn-dark-custom btn-sm mt-2">임계치 초과시 이메일 알림</button>
+    <button class="btn-dark-custom btn-sm mt-2">자동 정책 · 스로틀링</button>
+  </div>
+</div>
+
+<div class="box"><h5>상세정보</h5><p>메모리, 스토리지, 네트워크 (향후 개발 예정)</p></div>
+
+<script>
+new Chart(document.getElementById('resourceTrend'), {
+  type:'line',
+  data:{
+    labels:Array.from({length:12},(_,i)=>(i*5)+":00"),
+    datasets:[
+      {label:"CPU(%)",data:[20,40,35,60,45,70,55,65,40,50,45,60],borderColor:"red",fill:false},
+      {label:"메모리(%)",data:[30,35,40,45,50,55,60,62,58,57,59,60],borderColor:"orange",fill:false},
+      {label:"네트워크(Mbps)",data:[100,150,120,200,180,220,210,190,170,160,180,200],borderColor:"blue",fill:false},
+      {label:"스토리지(%)",data:[50,52,53,54,55,56,57,58,59,60,61,62],borderColor:"green",fill:false}
+    ]
+  }
+});
+
+setInterval(()=>{
+  document.getElementById("cpuUsage").innerText=Math.floor(Math.random()*100)+"%";
+  document.getElementById("memoryUsage").innerText=Math.floor(Math.random()*100)+"%";
+  document.getElementById("storageUsage").innerText=(40+Math.floor(Math.random()*60))+"%";
+  document.getElementById("networkUsage").innerText=(100+Math.floor(Math.random()*900))+" Mbps";
+},3000);
+</script>
+
+</body>
+</html>

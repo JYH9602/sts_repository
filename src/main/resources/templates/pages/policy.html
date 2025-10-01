@@ -1,0 +1,65 @@
+<!-- templates/pages/policy.html -->
+<div th:fragment="content">
+
+  <h2>정책 관리</h2>
+
+  <div class="d-flex justify-content-end mb-2 gap-2">
+    <button class="btn btn-success btn-sm">CSV 내보내기</button>
+    <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#deletedListModal">삭제된 항목 보기</button>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#policyModal">신규 정책</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="table table-dark table-striped text-center">
+      <thead>
+        <tr>
+          <th>rule_id</th>
+          <th>rule_name</th>
+          <th>level</th>
+          <th>rule_type</th>
+          <th>action</th>
+          <th>작업</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CEW_BLOCK01</td>
+          <td>SQL Injection 차단</td>
+          <td><span class="badge bg-danger">High</span></td>
+          <td>pattern</td>
+          <td>block</td>
+          <td>
+            <button class="btn-dark-custom btn-sm">수정</button>
+            <button class="btn-dark-custom btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">삭제</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 모달들 그대로 유지 -->
+  <div class="modal fade" id="policyModal" tabindex="-1">...</div>
+  <div class="modal fade" id="deleteModal" tabindex="-1">...</div>
+  <div class="modal fade" id="deletedListModal" tabindex="-1">...</div>
+
+  <script>
+    // 삭제 모달 열기
+    function openDeleteModal(ruleId) {
+      const modal = new bootstrap.Modal(document.getElementById("deleteModal"));
+      modal.show();
+      document.querySelector("#deleteModal .btn-danger").onclick = () => {
+        console.log(ruleId + " 삭제 실행");
+        modal.hide();
+        showAlert("정책이 삭제되었습니다.");
+      };
+    }
+
+    // 삭제된 목록 보기 (예시 데이터)
+    document.getElementById("deletedListModal").addEventListener("show.bs.modal", () => {
+      const tbody = document.querySelector("#deletedListModal tbody");
+      tbody.innerHTML = `
+        <tr><td>OLD_BLOCK01</td><td>구 정책</td></tr>
+      `;
+    });
+  </script>
+</div>
